@@ -45,4 +45,4 @@ Options:
 
 ## Document
 
-待更新
+待更新，配套 bash 客户端开发中

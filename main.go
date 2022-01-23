@@ -17,7 +17,7 @@ import (
 )
 
 // VERSION 版本号
-const VERSION = "0.1.0"
+const VERSION = "1.0"
 
 // h 帮助信息
 var h bool
