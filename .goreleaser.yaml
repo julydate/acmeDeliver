@@ -1,0 +1,75 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+    # you may remove this if you don't need go generate
+    - go generate ./...
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+      - freebsd
+      - openbsd
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+      - mips
+      - mips64
+      - mipsle
+      - mips64le
+    goarm:
+      - 6
+      - 7
+    gomips:
+      - hardfloat
+      - softfloat
+    ignore:
+      - goos: darwin
+        goarch: 386
+      - goos: darwin
+        goarch: arm
+      - goos: darwin
+        goarch: mips
+      - goos: darwin
+        goarch: mips64
+      - goos: darwin
+        goarch: mipsle
+      - goos: darwin
+        goarch: mips64le
+        
+      - goos: windows
+        goarch: mips
+      - goos: windows
+        goarch: mips64
+      - goos: windows
+        goarch: mipsle
+      - goos: windows
+        goarch: mips64le
+
+archives:
+  - format: binaries
+    replacements:
+      darwin: Darwin
+      freebsd: Freebsd
+      linux: Linux
+      openbsd: Openbsd
+      windows: Windows
+      386: i386
+      amd64: x86_64
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'

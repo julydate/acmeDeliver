@@ -13,3 +13,5 @@
 .vscode
 goproject.code-workspace
 helloworld.go.bak
+
+dist/
