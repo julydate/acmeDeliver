@@ -54,7 +54,7 @@ builds:
         goarch: mips64le
 
 archives:
-  - format: binaries
+  - format: binary
     replacements:
       darwin: Darwin
       freebsd: Freebsd
