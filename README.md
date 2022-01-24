@@ -47,11 +47,11 @@ Options:
 ```bash
 # Get single file `mydomain.net.key` to current work folder
 # 单独下载'mydomain.net.key'文件到当前工作目录
-./client.sh -d "mydomain.net" -p "passcode" -s "myacmedeliverserver.net:8080 -n mydomain.net.key"
+./client.sh -d "mydomain.net" -p "passcode" -s "myacmedeliverserver.net:8080" -n "mydomain.net.key"
 
 # Automatically download certs only when server's certs' timestamp updates
 # 仅在服务端证书的时间戳更新时自动下载证书密钥
-./client.sh -d "mydomain.net" -p "passcode" -s "myacmedeliverserver.net:8080 -c
+./client.sh -d "mydomain.net" -p "passcode" -s "myacmedeliverserver.net:8080" -c
 ```
 
 ## Document
