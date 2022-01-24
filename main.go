@@ -229,7 +229,7 @@ func check(response http.ResponseWriter, req *http.Request) {
 		fileInfo, err := os.Stat(path.Join(baseDir, domain, file))
 		if err != nil || fileInfo.IsDir() {
 			fmt.Println("Access from IP:", ip)
-			fmt.Println("Incoming illegal domain:", domain)
+			fmt.Println("Incoming illegal filename:", file)
 			response.WriteHeader(404)
 			fmt.Fprintf(response, "Certificate not found.")
 			return
