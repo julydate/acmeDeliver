@@ -37,10 +37,21 @@ Options:
         TLS 服务私钥文件,默认 key.pem (default "key.pem")
 ```
 
-## Example
+## Server Example
 
 ```bash
 ./acmeDeliver -p 8080 -d "/tmp/acme" -k "passcode" -t 600 -b 0.0.0.0 -tls -tlsport 8443 -cert server.pem -key server.key
+```
+
+## Client Example
+```bash
+# Get single file `mydomain.net.key` to current work folder
+# 单独下载'mydomain.net.key'文件到当前工作目录
+./client.sh -d "mydomain.net" -p "passcode" -s "myacmedeliverserver.net:8080 -n mydomain.net.key"
+
+# Automatically download certs only when server's certs' timestamp updates
+# 仅在服务端证书的时间戳更新时自动下载证书密钥
+./client.sh -d "mydomain.net" -p "passcode" -s "myacmedeliverserver.net:8080 -c
 ```
 
 ## Document
