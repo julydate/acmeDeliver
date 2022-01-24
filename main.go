@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -218,35 +217,21 @@ func check(response http.ResponseWriter, req *http.Request) {
 		}
 
 		// 校验域名是否在指定文件夹内
-		var checkDomain, checkFile = false, false
-		files, _ := ioutil.ReadDir(baseDir)
-		for _, f := range files {
-			if domain == f.Name() {
-				checkDomain = true
-			}
-		}
-		if checkDomain {
-			// 对应域名的文件夹存在，校验内部文件是否存在
-			files, _ := ioutil.ReadDir(path.Join(baseDir, domain))
-			for _, f := range files {
-				if file == f.Name() {
-					checkFile = true
-				}
-			}
-		} else {
-			// 获取的域名不存在
+		dirInfo, err := os.Stat(path.Join(baseDir, domain))
+		if err != nil || !dirInfo.IsDir() {
 			fmt.Println("Access from IP:", ip)
 			fmt.Println("Incoming illegal domain:", domain)
 			response.WriteHeader(404)
-			fmt.Fprintf(response, "Domain not exist.")
+			fmt.Fprintln(response, "Domain not exist.")
 			return
 		}
-		if !checkFile {
-			// 获取的文件不存在
+		//
+		fileInfo, err := os.Stat(path.Join(baseDir, domain, file))
+		if err != nil || fileInfo.IsDir() {
 			fmt.Println("Access from IP:", ip)
-			fmt.Println("Incoming illegal filename:", file)
+			fmt.Println("Incoming illegal domain:", domain)
 			response.WriteHeader(404)
-			fmt.Fprintf(response, "File not exist.")
+			fmt.Fprintf(response, "Certificate not found.")
 			return
 		}
 		// 全部校验通过，放行文件
