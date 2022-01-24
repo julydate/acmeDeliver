@@ -9,6 +9,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path"
 	"strconv"
 	"time"
 
@@ -217,7 +218,7 @@ func check(response http.ResponseWriter, req *http.Request) {
 		}
 
 		// 校验域名是否在指定文件夹内
-		var checkDomain, checkFile bool = false, false
+		var checkDomain, checkFile = false, false
 		files, _ := ioutil.ReadDir(baseDir)
 		for _, f := range files {
 			if domain == f.Name() {
@@ -226,7 +227,7 @@ func check(response http.ResponseWriter, req *http.Request) {
 		}
 		if checkDomain {
 			// 对应域名的文件夹存在，校验内部文件是否存在
-			files, _ := ioutil.ReadDir(baseDir + domain)
+			files, _ := ioutil.ReadDir(path.Join(baseDir, domain))
 			for _, f := range files {
 				if file == f.Name() {
 					checkFile = true
@@ -249,7 +250,7 @@ func check(response http.ResponseWriter, req *http.Request) {
 			return
 		}
 		// 全部校验通过，放行文件
-		filepath := baseDir + domain + "/" + file
+		filepath := path.Join(baseDir, domain, file)
 		fmt.Println("Access from IP:", ip)
 		fmt.Println("Access file:", filepath)
 		http.ServeFile(response, req, filepath)
