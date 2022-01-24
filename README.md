@@ -11,7 +11,7 @@
 
 ```bash
 $ ./acmeDeliver -h
-acmeDeliver version: 1.0
+acmeDeliver version: 1.1
 Usage: acmeDeliver [-h] [-p port] [-d dirname] [-k password] [-t time] [-b address] [-tls] [-tlsport port] [-cert filename] [-key filename]
 
 Options:
