@@ -8,7 +8,7 @@ getTimestamp(){
 }
 
 generateRandom(){
-  checkSum=$RANDOM
+  checkSum=$(echo -n "$RANDOM$timestamp"|md5sum|cut -d ' ' -f1) # 将checksum改为随机性更高的md5(random+timestamp)
 }
 
 calculateToken(){
@@ -34,7 +34,7 @@ checkUpdate(){
   fi
   if [ -f "${WORKDIR}/${domain}/timestamp.txt" ]; then
     #检测服务器时间戳是否有更新
-    requestServer "${server}" "ecc_time.log" #向服务端请求服务端更新时间戳
+    requestServer "${server}" "time.log" #向服务端请求服务端更新时间戳
     if [ "$requestRes" != '200' ]; then
       echo "请求服务端时间戳失败！"
       #exit 1 #取消注释以在服务端响应时间戳失败时退出脚本
@@ -50,7 +50,7 @@ checkUpdate(){
     fi
   else
     echo "本地不存在时间戳文件，将会开始下载"
-    requestServer "${server}" "ecc_time.log" #向服务端请求服务端更新时间戳
+    requestServer "${server}" "time.log" #向服务端请求服务端更新时间戳
     if [ "$requestRes" != '200' ]; then
       echo "请求服务端时间戳失败！"
       #exit 1 #取消注释以在服务端响应时间戳失败时退出脚本
@@ -60,7 +60,7 @@ checkUpdate(){
   fi
   mv -f "${WORKDIR}/${domain}/temp" "${WORKDIR}/${domain}/timestamp.tmp" #将刚对比的时间戳临时保存
 
-  for file_name_d in "${domain}.cer" "${domain}.key" "ca.cer" "fullchain.cer"
+  for file_name_d in "cert.pem" "key.pem" "fullchain.pem"
   do
     echo "下载文件名：${file_name_d}"
     requestServer "${server}" "${file_name_d}" #向服务端请求服务端更新时间戳
@@ -76,6 +76,10 @@ checkUpdate(){
     return 1
   fi
   mv -f "${WORKDIR}/${domain}/timestamp.tmp" "${WORKDIR}/${domain}/timestamp.txt" #将刚对比的时间戳作为保存的时间戳
+  # 删除临时文件
+  if [ -f "${WORKDIR}/${domain}/temp" ]; then
+    rm -f "${WORKDIR}/${domain}/temp"
+  fi
   return 0
 }
 
