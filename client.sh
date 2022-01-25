@@ -3,6 +3,25 @@
 DEBUG=true
 WORKDIR="/tmp/acme" #工作目录，默认为/tmp/acme
 
+# Variables corresponding to the deployment type
+# 以下为自动安装证书的目的地设置
+# manual
+manual_cert_file=""
+manual_key_file=""
+manual_fullchain_file=""
+#manual_reloadcmd="" # To execute commands after updating the certificate, uncomment and configure the content yourself 若要更新证书后执行命令，请取消注释并自行配置内容
+
+# apache
+apache_cert_file=""
+apache_key_file=""
+apache_fullchain_file=""
+#apache_reloadcmd="service apache2 force-reload" # To execute commands after updating the certificate, uncomment and configure the content yourself 若要更新证书后执行命令，请取消注释并自行配置内容
+
+# nginx
+nginx_cert_file=""
+nginx_key_file=""
+#nginx_reloadcmd="service nginx force-reload" # To execute commands after updating the certificate, uncomment and configure the content yourself 若要更新证书后执行命令，请取消注释并自行配置内容
+
 getTimestamp(){
   timestamp=$(date '+%s')
 }
@@ -84,16 +103,72 @@ checkUpdate(){
 }
 
 deployCert(){
-  echo "deploy cert file function"
+  # $1 deploy_type:manual,apache,nginx
+  # if no need to deploy
+  if [ "$1" = "0" ]; then
+    return
+
+  # manual
+  elif [ "$1" = "m" ]; then
+    if $DEBUG; then echo "deploy_type:manual"; fi
+    if [ -z "$manual_cert_file" ] || [ -z "$manual_key_file" ] || [ -z "$manual_fullchain_file" ]; then
+      echo "未配置证书目的地变量"
+      exit 1
+    fi
+    cp -f "${WORKDIR}/${domain}/cert.pem" "$manual_cert_file"
+    cp -f "${WORKDIR}/${domain}/key.pem" "$manual_key_file"
+    cp -f "${WORKDIR}/${domain}/fullchain.pem" "$manual_fullchain_file"
+    if [ -z "$manual_reloadcmd" ]; then
+      cd "${WORKDIR}/${domain}" && eval "$manual_reloadcmd"
+    fi
+
+  # apache
+  elif [ "$1" = "a" ]; then
+    if $DEBUG; then echo "deploy_type:apache"; fi
+    if [ -z "$apache_cert_file" ] || [ -z "$apache_key_file" ] || [ -z "$apache_fullchain_file" ]; then
+      echo "未配置证书目的地变量"
+      exit 1
+    fi
+    cp -f "${WORKDIR}/${domain}/cert.pem" "$apache_cert_file"
+    cp -f "${WORKDIR}/${domain}/key.pem" "$apache_key_file"
+    cp -f "${WORKDIR}/${domain}/fullchain.pem" "$apache_fullchain_file"
+    if [ -z "$apache_reloadcmd" ]; then
+      cd "${WORKDIR}/${domain}" && eval "$apache_reloadcmd"
+    fi
+
+  # nginx
+  elif [ "$1" = "n" ]; then
+    if $DEBUG; then echo "deploy_type:nginx"; fi
+    if [ -z "$nginx_cert_file" ] || [ -z "$nginx_key_file" ]; then
+      echo "未配置证书目的地变量"
+      exit 1
+    fi
+    cp -f "${WORKDIR}/${domain}/cert.pem" "$nginx_cert_file"
+    cp -f "${WORKDIR}/${domain}/key.pem" "$nginx_key_file"
+    if [ -z "$nginx_reloadcmd" ]; then
+      cd "${WORKDIR}/${domain}" && eval "$nginx_reloadcmd"
+    fi
+  fi
 }
 
 echo_help(){
-  echo "Usage: [-c execute check update job] [-h help] [-d domain name] [-p password] [-s server address] [-n file name] [-w workdir(not necessary)]
-使用方法：[-c 执行自动更新任务] [-h 帮助] [-d 域名] [-p 密码] [-s acmeDeliver服务器地址] [-n 要获取的文件名] [-w 工作目录(可选)]"
+  echo "Usage: [-c execute_check_update_job_type(m,a,n)] [-h help] [-d domain name] [-p password] [-s server address] [-n file name] [-w workdir(not necessary)]
+-c m    ------manually get cert files
+   a    ------deploy cert files to apache
+   n    ------deploy cert files to nginx
+   0    ------only update, don't deploy
+CAUTION! Variables corresponding to the deployment type must be defined
+使用方法：[-c 执行自动更新任务类型(m,a,n)] [-h 帮助] [-d 域名] [-p 密码] [-s acmeDeliver服务器地址] [-n 要获取的文件名] [-w 工作目录(可选)]
+-c m    ------手动获得证书文件
+   a    ------部署证书至apache
+   n    ------部署证书至nginx
+   0    ------仅更新证书，不部署
+注意！ 必须定义部署类型对应的变量
+"
 }
 
 #解析命令行参数
-while getopts "chp:s:d:n:w:" arg #选项后面的冒号表示该选项需要参数
+while getopts "hc:p:s:d:n:w:" arg #选项后面的冒号表示该选项需要参数
 do
   case $arg in
     h)
@@ -102,6 +177,7 @@ do
       ;;
     c)
       check_update_job=true
+      deploy_type=$OPTARG
       ;;
     p)
       password=$OPTARG
@@ -139,7 +215,7 @@ main(){
   fi
 
   getTimestamp #获取当前时间戳
-  if test ${check_update_job}; then checkUpdate;exit 0; fi
+  if test ${check_update_job}; then checkUpdate; deployCert "$deploy_type"; exit 0; fi
 
   # 未设置工作模式时默认是获取指定文件
   if [ -z "$filename" ]; then
