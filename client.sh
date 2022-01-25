@@ -151,14 +151,32 @@ deployCert(){
   fi
 }
 
+remove_workdir(){
+  for dir_name_d in "/" "/boot" "/bin" "/dev" "/lib" "/lib64" "/proc" "/run" "/usr" "/usr/bin" "/etc" "/root"
+  do
+    if [ "${WORKDIR}" = "$dir_name_d" ]; then
+      echo "ERROR! Your workdir is set to a dangerous path! The remove process will automatically stop!
+  错误！您的workdir设置为危险路径！删除进程将自动停止！"
+      exit 1
+    fi
+  done
+  echo "Please be sure that ${WORKDIR} has no other important files!
+请确保${WORKDIR}没有其他重要文件！"
+  read -p "Are you sure?[Y/n]" sure_flag
+  if [ "${sure_flag}" = "Y" ] || [ "${sure_flag}" = "y" ]; then
+    rm -rf "${WORKDIR}" && echo "删除完成"
+  fi
+
+}
+
 echo_help(){
-  echo "Usage: [-c execute_check_update_job_type(m,a,n)] [-h help] [-d domain name] [-p password] [-s server address] [-n file name] [-w workdir(not necessary)]
+  echo "Usage: [-c execute_check_update_job_type(m,a,n)] [-h help] [-d domain name] [-p password] [-s server address] [-n file name] [-w workdir(default:/tmp/acme)] [-r remove workdir files]
 -c m    ------manually get cert files
    a    ------deploy cert files to apache
    n    ------deploy cert files to nginx
    0    ------only update, don't deploy
 CAUTION! Variables corresponding to the deployment type must be defined
-使用方法：[-c 执行自动更新任务类型(m,a,n)] [-h 帮助] [-d 域名] [-p 密码] [-s acmeDeliver服务器地址] [-n 要获取的文件名] [-w 工作目录(可选)]
+使用方法：[-c 执行自动更新任务类型(m,a,n)] [-h 帮助] [-d 域名] [-p 密码] [-s acmeDeliver服务器地址] [-n 要获取的文件名] [-w 工作目录(默认:/tmp/acme)] [-r 清除工作目录文件]
 -c m    ------手动获得证书文件
    a    ------部署证书至apache
    n    ------部署证书至nginx
@@ -168,7 +186,7 @@ CAUTION! Variables corresponding to the deployment type must be defined
 }
 
 #解析命令行参数
-while getopts "hc:p:s:d:n:w:" arg #选项后面的冒号表示该选项需要参数
+while getopts "rhc:p:s:d:n:w:" arg #选项后面的冒号表示该选项需要参数
 do
   case $arg in
     h)
@@ -199,6 +217,9 @@ do
       WORKDIR=$OPTARG
       if $DEBUG; then echo "workdir:$WORKDIR"; fi
       ;;
+    r)
+      remove_workdir_job=true
+      ;;
     ?)  #当有不认识的选项的时候arg为?
       echo "unknown argument"
       echo_help
@@ -215,7 +236,9 @@ main(){
   fi
 
   getTimestamp #获取当前时间戳
+  if test ${remove_workdir_job}; then remove_workdir; exit 0; fi
   if test ${check_update_job}; then checkUpdate; deployCert "$deploy_type"; exit 0; fi
+
 
   # 未设置工作模式时默认是获取指定文件
   if [ -z "$filename" ]; then
