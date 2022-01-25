@@ -11,7 +11,7 @@
 
 ```bash
 $ ./acmeDeliver -h
-acmeDeliver version: 1.1
+acmeDeliver version: 1.2
 Usage: acmeDeliver [-h] [-p port] [-d dirname] [-k password] [-t time] [-b address] [-tls] [-tlsport port] [-cert filename] [-key filename]
 
 Options:
@@ -44,14 +44,38 @@ Options:
 ```
 
 ## Client Example
+### Download `client.sh` to your machine(下载`client.sh`到你的机器上)
+``wget https://raw.githubusercontent.com/julydate/acmeDeliver/master/client.sh``
+### Usage
 ```bash
 # Get single file `mydomain.net.key` to current work folder
 # 单独下载'mydomain.net.key'文件到当前工作目录
 ./client.sh -d "mydomain.net" -p "passcode" -s "myacmedeliverserver.net:8080" -n "mydomain.net.key"
 
-# Automatically download certs only when server's certs' timestamp updates
-# 仅在服务端证书的时间戳更新时自动下载证书密钥
-./client.sh -d "mydomain.net" -p "passcode" -s "myacmedeliverserver.net:8080" -c
+
+# Automatically download certs only when server's certs' timestamp updates (Only download and do not deploy)
+# 仅在服务端证书的时间戳更新时自动下载证书密钥(仅下载不部署)
+./client.sh -d "mydomain.net" -p "passcode" -s "myacmedeliverserver.net:8080" -c "0"
+
+
+# Automatically download certs only when server's certs' timestamp updates and deploy to apache
+# 仅在服务端证书的时间戳更新时自动下载证书密钥并部署到apache
+#
+# !CAUTION! MUST SET apache_* vars before execute this script!
+# !注意! 运行脚本前必须设置`apache_*`相关变量
+# Example
+# apache_cert_file="/path/to/certfile/in/apache/cert.pem"
+# apache_key_file="/path/to/keyfile/in/apache/key.pem"
+# apache_fullchain_file="/path/to/fullchain/certfile/apache/fullchain.pem"
+#
+# To execute commands after updating the certificate, uncomment and configure `apache_reloadcmd` the content yourself 
+# 若要更新证书后执行命令，请取消注释并自行配置`apache_reloadcmd`内容
+# 
+./client.sh -d "mydomain.net" -p "passcode" -s "myacmedeliverserver.net:8080" -c "a"
+#
+# The configurations of nginx are the same, except for the prefix of the variable
+# nginx除了变量的前缀的配置相同
+
 ```
 
 ## Document
