@@ -6,9 +6,13 @@
 
  acme.sh 证书分发服务
 
-将 acme.sh 获取的证书通过 http 服务分发到多台服务器
+将 acme.sh 获取的证书通过 web 服务分发到多台服务器
 
-## Server Usage
+本分支为服务端源码，客户端源码在 [client](https://github.com/julydate/acmeDeliver/tree/client) 分支下
+
+## Usage
+
+### Server
 
 ```bash
 $ ./acmeDeliver -h
@@ -36,15 +40,19 @@ Options:
         TLS 服务证书文件,默认 cert.pem
   -key string
         TLS 服务私钥文件,默认 key.pem (default "key.pem")
+
+$ ./acmeDeliver -p 8080 -d "/tmp/acme" -k "passcode" -t 600 -b 0.0.0.0 -tls -tlsport 8443 -cert server.pem -key server.key
 ```
 
-## Server Example
+### Client
+
+切换到 [client](https://github.com/julydate/acmeDeliver/tree/client) 分支
+
+Download `client.sh` to your machine(下载`client.sh`到你的机器上)
 
 ```bash
-./acmeDeliver -p 8080 -d "/tmp/acme" -k "passcode" -t 600 -b 0.0.0.0 -tls -tlsport 8443 -cert server.pem -key server.key
+wget https://raw.githubusercontent.com/julydate/acmeDeliver/client/client.sh
 ```
-
-## Client Usage
 
 ```bash
 # Get single file `mydomain.net.key` to current work folder
@@ -75,14 +83,6 @@ Options:
 # The configurations of nginx are the same, except for the prefix of the variable
 # nginx除了变量的前缀的配置相同
 
-```
-
-## Client Example
-
-### Download `client.sh` to your machine(下载`client.sh`到你的机器上)
-
-```bash
-wget https://raw.githubusercontent.com/julydate/acmeDeliver/master/client.sh
 ```
 
 ## Document
