@@ -25,6 +25,7 @@ builds:
       - mipsle
       - mips64le
     goarm:
+      - 5
       - 6
       - 7
     gomips:
@@ -45,6 +46,9 @@ builds:
         goarch: mips64le
         
       - goos: windows
+        goarch: arm
+        goarm: 5
+      - goos: windows
         goarch: mips
       - goos: windows
         goarch: mips64
@@ -53,16 +57,28 @@ builds:
       - goos: windows
         goarch: mips64le
 
+      - goos: linux
+        goarch: mips64
+        gomips: softfloat
+      - goos: linux
+        goarch: mips64le
+        gomips: softfloat
+
+      - goos: freebsd
+        goarch: arm
+      - goos: freebsd
+        goarch: arm64
+
+      - goos: openbsd
+        goarch: arm
+      - goos: openbsd
+        goarch: arm64
+
 archives:
   - format: binary
     replacements:
-      darwin: Darwin
-      freebsd: Freebsd
-      linux: Linux
-      openbsd: Openbsd
-      windows: Windows
       386: i386
-      amd64: x86_64
+    name_template: '{{ .Binary }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}'
 checksum:
   name_template: 'checksums.txt'
 snapshot:

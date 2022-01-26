@@ -2,16 +2,17 @@
 
 ![GitHub](https://img.shields.io/github/license/julydate/acmeDeliver?style=flat-square)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/julydate/acmeDeliver?style=flat-square)
+![GitHub release (latest by date including pre-releases)](https://img.shields.io/github/v/release/julydate/acmeDeliver?include_prereleases&style=flat-square)
 
  acme.sh 证书分发服务
 
 将 acme.sh 获取的证书通过 http 服务分发到多台服务器
 
-## Usage
+## Server Usage
 
 ```bash
 $ ./acmeDeliver -h
-acmeDeliver version: 1.2
+acmeDeliver version: 1.1
 Usage: acmeDeliver [-h] [-p port] [-d dirname] [-k password] [-t time] [-b address] [-tls] [-tlsport port] [-cert filename] [-key filename]
 
 Options:
@@ -43,10 +44,8 @@ Options:
 ./acmeDeliver -p 8080 -d "/tmp/acme" -k "passcode" -t 600 -b 0.0.0.0 -tls -tlsport 8443 -cert server.pem -key server.key
 ```
 
-## Client Example
-### Download `client.sh` to your machine(下载`client.sh`到你的机器上)
-``wget https://raw.githubusercontent.com/julydate/acmeDeliver/master/client.sh``
-### Usage
+## Client Usage
+
 ```bash
 # Get single file `mydomain.net.key` to current work folder
 # 单独下载'mydomain.net.key'文件到当前工作目录
@@ -78,6 +77,22 @@ Options:
 
 ```
 
+## Client Example
+
+### Download `client.sh` to your machine(下载`client.sh`到你的机器上)
+
+```bash
+wget https://raw.githubusercontent.com/julydate/acmeDeliver/master/client.sh
+```
+
 ## Document
 
 待更新，配套 bash 客户端开发中
+
+## Contributors
+
+[![Moe](https://avatars.githubusercontent.com/u/25688691?v=4&s=48)](https://github.com/MoeMegu)
+[@Moe](https://github.com/MoeMegu)
+
+[![Raoby](https://avatars.githubusercontent.com/u/56875134?v=4&s=48)](https://github.com/Raobee)
+[@Raoby](https://github.com/Raobee)
