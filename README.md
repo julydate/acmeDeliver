@@ -82,7 +82,7 @@ Options:
 ### Download `client.sh` to your machine(下载`client.sh`到你的机器上)
 
 ```bash
-wget https://raw.githubusercontent.com/julydate/acmeDeliver/master/client.sh
+wget https://raw.githubusercontent.com/julydate/acmeDeliver/client/client.sh
 ```
 
 ## Document
