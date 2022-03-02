@@ -87,7 +87,113 @@ wget https://raw.githubusercontent.com/julydate/acmeDeliver/client/client.sh
 
 ## Document
 
-待更新，配套 bash 客户端开发中
+详细教程：[使用 acme.sh 部署通配符证书申请与分发服务](https://www.julydate.com/post/462996681/)
+
+简明教程如下，以 Debian 和当前版本，使用 CloudFlare 为例。
+
+### 服务端
+
+```bash
+# 安装环境
+apt-get install openssl cron socat curl -y
+apt-get update ca-certificates
+systemctl enable cron
+systemctl start cron
+
+# 创建工作目录
+mkdir -p /home/acme
+
+# 安装 acme.sh 脚本
+curl https://get.acme.sh | sh
+source ~/.bashrc
+source ~/.bash_profile
+acme.sh  --upgrade  --auto-upgrade --log  "/home/acme/acme.log"
+
+# 定义临时变量
+# example.com 修改成你的域名
+export DOMAIN="example.com"
+# 下面的内容根据所使用的 DNS 服务商更改
+export CF_Key="b8e8fff91ff445a1a238fc080797910b"
+export CF_Email="admin@example.com"
+
+# 设置 CA
+acme.sh --set-default-ca --server letsencrypt
+
+# 签发证书
+mkdir -p /home/acme/${DOMAIN}
+acme.sh --issue --dns dns_cf -d ${DOMAIN} -d *.${DOMAIN}
+
+# 移动证书
+acme.sh --install-cert -d ${DOMAIN} \
+--cert-file      /home/acme/${DOMAIN}/cert.pem  \
+--key-file       /home/acme/${DOMAIN}/key.pem  \
+--fullchain-file /home/acme/${DOMAIN}/fullchain.pem \
+--reloadcmd     "echo \$(date -d \"\$current\" +%s) > /home/acme/${DOMAIN}/time.log"
+
+# 下载 acmeDeliver
+curl -sLo /home/acme/acmeDeliver https://github.com/julydate/acmeDeliver/releases/download/v1.1/acmeDeliver_1.1_Linux_x86_64
+chmod +x /home/acme/acmeDeliver
+
+
+# 运行 acmeDeliver, -p 指定端口 -k 指定同步密码（请不要用此处的密码）
+/home/acme/acmeDeliver -p 9929 -d "/home/acme/" -k 9bff385c71d051c3e81af2bb6950b3e4
+
+# 上一步没有问题则后台运行
+nohup /home/acme/acmeDeliver -p 9929 -d "/home/acme/" -k 9bff385c71d051c3e81af2bb6950b3e4 > /home/acme/acmeDeliver.log 2>&1 &
+
+# 防火墙放行指定端口
+iptables -I INPUT -m state --state NEW -m tcp -p tcp --dport 9929 -j ACCEPT
+
+# 设置进程守护
+cat > /etc/systemd/system/acmeDeliver.service << EOF
+[Unit]
+Description=acmeDeliver
+After=network-online.target
+Wants=network-online.target systemd-networkd-wait-online.service
+[Service]
+Type=simple
+User=root
+Restart=on-failure
+RestartSec=5s
+DynamicUser=true
+ExecStart=/home/acme/acmeDeliver -p 9929 -d "/home/acme/" -k 9bff385c71d051c3e81af2bb6950b3e4 > /home/acme/acmeDeliver.log 2>&1 &
+[Install]
+WantedBy=multi-user.target
+EOF
+
+# 设置开机启动
+systemctl enable --now acmeDeliver
+```
+
+### 客户端
+
+```bash
+# 安装环境
+apt-get install openssl cron curl -y
+apt-get update ca-certificates
+systemctl enable cron
+systemctl start cron
+
+# 下载客户端
+curl -sLo /root/acmeDeliverClient.sh https://raw.githubusercontent.com/julydate/acmeDeliver/client/client.sh
+chmod +x /root/acmeDeliverClient.sh
+
+# 更改客户端的工作目录
+sed -i 's|\/tmp\/acme|\/home\/acme/|g' /root/acmeDeliverClient.sh
+
+# 测试运行客户端
+# 其中 -p 指定的密码就是前面你部署服务端的时候设置的密码
+# 233.233.233.233:9929 改为你服务器的 IP 和前面设置的服务端口
+/root/acmeDeliverClient.sh  -d "example.com" -p "9bff385c71d051c3e81af2bb6950b3e4" -s "http://233.233.233.233:9929" -c "0"
+
+# 设置客户端定时同步
+crontab -e
+# 最后一行添加以下内容并保存
+0 0 * * * /root/acmeDeliverClient.sh  -d "example.com" -p "9bff385c71d051c3e81af2bb6950b3e4" -s "http://233.233.233.233:9929" -c "0" > /dev/null 2>&1 &
+
+```
+
+证书在 `/home/acme` 目录下
 
 ## Contributors
 
@@ -96,3 +202,7 @@ wget https://raw.githubusercontent.com/julydate/acmeDeliver/client/client.sh
 
 [![Raoby](https://avatars.githubusercontent.com/u/56875134?v=4&s=48)](https://github.com/Raobee)
 [@Raoby](https://github.com/Raobee)
+
+## Thanks
+
+[acme.sh](https://github.com/acmesh-official/acme.sh)
