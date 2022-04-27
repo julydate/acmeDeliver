@@ -118,7 +118,7 @@ deployCert(){
     cp -f "${WORKDIR}/${domain}/cert.pem" "$manual_cert_file"
     cp -f "${WORKDIR}/${domain}/key.pem" "$manual_key_file"
     cp -f "${WORKDIR}/${domain}/fullchain.pem" "$manual_fullchain_file"
-    if [ -z "$manual_reloadcmd" ]; then
+    if [ ! -z "$manual_reloadcmd" ]; then
       cd "${WORKDIR}/${domain}" && eval "$manual_reloadcmd"
     fi
 
@@ -132,7 +132,7 @@ deployCert(){
     cp -f "${WORKDIR}/${domain}/cert.pem" "$apache_cert_file"
     cp -f "${WORKDIR}/${domain}/key.pem" "$apache_key_file"
     cp -f "${WORKDIR}/${domain}/fullchain.pem" "$apache_fullchain_file"
-    if [ -z "$apache_reloadcmd" ]; then
+    if [ ! -z "$apache_reloadcmd" ]; then
       cd "${WORKDIR}/${domain}" && eval "$apache_reloadcmd"
     fi
 
@@ -145,7 +145,7 @@ deployCert(){
     fi
     cp -f "${WORKDIR}/${domain}/cert.pem" "$nginx_cert_file"
     cp -f "${WORKDIR}/${domain}/key.pem" "$nginx_key_file"
-    if [ -z "$nginx_reloadcmd" ]; then
+    if [ ! -z "$nginx_reloadcmd" ]; then
       cd "${WORKDIR}/${domain}" && eval "$nginx_reloadcmd"
     fi
   fi
