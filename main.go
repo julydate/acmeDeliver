@@ -110,8 +110,9 @@ func main() {
 			}()
 		} else {
 			lego.DNSCert()
-			err = os.WriteFile(path.Join(lego.BaseDir, lego.Domain, fmt.Sprintf("%s.key", lego.Domain)), lego.Resource.PrivateKey, 0644)
-			err = os.WriteFile(path.Join(lego.BaseDir, lego.Domain, fmt.Sprintf("%s.crt", lego.Domain)), lego.Resource.Certificate, 0644)
+			err = os.WriteFile(path.Join(lego.BaseDir, lego.Domain, "key.pem"), lego.Resource.PrivateKey, 0644)
+			err = os.WriteFile(path.Join(lego.BaseDir, lego.Domain, "cert.pem"), lego.Resource.Certificate, 0644)
+			err = os.WriteFile(path.Join(lego.BaseDir, lego.Domain, "time.log"), []byte(time.Now().String()), 0644)
 			if err != nil {
 				log.Panic(err)
 			}

@@ -114,8 +114,9 @@ func (l *LegoCmd) RenewCert() error {
 	if time.Until(cert.NotAfter) < 30*24*time.Hour {
 		log.Printf("Cert will expire in 30 days, Renew now")
 		l.DNSCert()
-		err = os.WriteFile(path.Join(l.BaseDir, l.Domain, fmt.Sprintf("%s.key", l.Domain)), l.Resource.PrivateKey, 0644)
-		err = os.WriteFile(path.Join(l.BaseDir, l.Domain, fmt.Sprintf("%s.crt", l.Domain)), l.Resource.Certificate, 0644)
+		err = os.WriteFile(path.Join(l.BaseDir, l.Domain, "key.pem"), l.Resource.PrivateKey, 0644)
+		err = os.WriteFile(path.Join(l.BaseDir, l.Domain, "cert.pem"), l.Resource.Certificate, 0644)
+		err = os.WriteFile(path.Join(l.BaseDir, l.Domain, "time.log"), []byte(time.Now().String()), 0644)
 		if err != nil {
 			return err
 		}
@@ -125,8 +126,8 @@ func (l *LegoCmd) RenewCert() error {
 }
 
 func (l *LegoCmd) CheckCertFile() (string, string, error) {
-	keyPath := path.Join(l.BaseDir, l.Domain, fmt.Sprintf("%s.key", l.Domain))
-	certPath := path.Join(l.BaseDir, l.Domain, fmt.Sprintf("%s.crt", l.Domain))
+	keyPath := path.Join(l.BaseDir, l.Domain, "key.pem")
+	certPath := path.Join(l.BaseDir, l.Domain, "cert.pem")
 	if _, err := os.Stat(keyPath); os.IsNotExist(err) {
 		return "", "", fmt.Errorf("cert key failed: %s", l.Domain)
 	}
