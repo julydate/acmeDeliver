@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"flag"
 	"fmt"
+	"github.com/julydate/acmeDeliver/legocmd"
 	"io"
 	"io/ioutil"
 	"log"
@@ -56,6 +57,9 @@ var domain, file, t, checksum, sign string
 // Creates a new timed map which scans for expired keys every 1 second
 var tm = timedmap.New(1 * time.Second)
 
+// cloudflare
+var email, cfkey, cfDomain string
+
 func init() {
 	// 初始化从命令行获取参数
 	flag.BoolVar(&h, "h", false, "显示帮助信息")
@@ -68,6 +72,9 @@ func init() {
 	flag.StringVar(&baseDir, "d", "./", "证书文件所在目录,默认当前目录")
 	flag.StringVar(&key, "k", "passwd", "密码,默认 passwd")
 	flag.Int64Var(&timeRange, "t", 60, "时间戳误差,默认 60 秒")
+	flag.StringVar(&email, "e", "", "Cloudflare Email")
+	flag.StringVar(&cfkey, "cfkey", "", "Cloudflare Key")
+	flag.StringVar(&cfDomain, "domain", "", "Cloudflare Domain")
 	// 修改默认 Usage
 	flag.Usage = usage
 }
@@ -77,16 +84,44 @@ func main() {
 	// 必须在所有 flag 都注册好而未访问其值时执行
 	// 未注册却使用 flag -help 时，会返回 ErrHelp
 	flag.Parse()
-
+	lego := legocmd.LegoCmd{
+		Domain:  cfDomain,
+		Email:   email,
+		Key:     cfkey,
+		BaseDir: baseDir,
+	}
 	// 显示帮助信息
 	if h {
 		flag.Usage()
 		return
 	}
 
+	// cloudflare
+	if email != "" && cfkey != "" {
+		_, _, err := lego.CheckCertFile()
+		if err == nil {
+			log.Printf("start monitor cert")
+			go func() {
+				time.Sleep(time.Hour)
+				err = lego.RenewCert()
+				if err != nil {
+					log.Println(err)
+				}
+			}()
+		} else {
+			lego.DNSCert()
+			err = os.WriteFile(path.Join(lego.BaseDir, lego.Domain, fmt.Sprintf("%s.key", lego.Domain)), lego.Resource.PrivateKey, 0644)
+			err = os.WriteFile(path.Join(lego.BaseDir, lego.Domain, fmt.Sprintf("%s.crt", lego.Domain)), lego.Resource.Certificate, 0644)
+			if err != nil {
+				log.Panic(err)
+			}
+		}
+	}
+
 	// 设置访问的路由
 	http.HandleFunc("/", check)
 
+	log.Printf("start service. bind on %s:%s, workdir: %s", bind, port, baseDir)
 	// 启动 TLS 端口监听
 	if tls {
 		// 使用 goroutine 进行监听防阻塞

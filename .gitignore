@@ -15,3 +15,11 @@ goproject.code-workspace
 helloworld.go.bak
 
 dist/
+### Example user template template
+### Example user template
+
+# IntelliJ project files
+.idea
+*.iml
+out
+gen
