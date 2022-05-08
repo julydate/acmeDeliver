@@ -84,7 +84,7 @@ checkUpdate(){
     echo "下载文件名：${file_name_d}"
     requestServer "${server}" "${file_name_d}" #向服务端请求服务端更新时间戳
     if [ "$requestRes" != '200' ]; then
-      printf "请求文件失败！文件名：%s,状态码：%s" "$file_name_d" "$requestRes"
+      printf "请求文件失败！文件名：%s,状态码：%s \n" "$file_name_d" "$requestRes"
       flag_fail=true
       #exit 1 #取消注释以在服务端响应文件失败时退出脚本
     fi
@@ -186,7 +186,7 @@ CAUTION! Variables corresponding to the deployment type must be defined
 }
 
 #解析命令行参数
-while getopts "rhc:p:s:d:n:w:" arg #选项后面的冒号表示该选项需要参数
+while getopts "rhc:p:s:d:n:w:f:" arg #选项后面的冒号表示该选项需要参数
 do
   case $arg in
     h)
@@ -220,6 +220,10 @@ do
     r)
       remove_workdir_job=true
       ;;
+    f)
+      cert_env_file=$OPTARG
+      if $DEBUG; then echo "environment file:$cert_env_file"; fi
+      ;;
     ?)  #当有不认识的选项的时候arg为?
       echo "unknown argument"
       echo_help
@@ -235,10 +239,16 @@ main(){
     exit 1
   fi
 
+  if [ -f "$cert_env_file" ]; then
+    printf "发现配置文件， 将从 %s 内读取参数 \n" "$cert_env_file"
+    set -o allexport
+    source "$cert_env_file"
+    set +o allexport
+  fi
+
   getTimestamp #获取当前时间戳
   if test ${remove_workdir_job}; then remove_workdir; exit 0; fi
   if test ${check_update_job}; then checkUpdate; deployCert "$deploy_type"; exit 0; fi
-
 
   # 未设置工作模式时默认是获取指定文件
   if [ -z "$filename" ]; then
@@ -248,13 +258,13 @@ main(){
 
   requestServer "$server" "$filename" #请求服务器指定文件
   if [ "$requestRes" != '200' ]; then
-    printf "请求文件失败！文件名：%s,状态码：%s" "$file_name_d" "$requestRes"
+    printf "请求文件失败！文件名：%s,状态码：%s \n" "$file_name_d" "$requestRes"
     exit 1
   fi
 
   mv -f "${WORKDIR}/${domain}/temp" "$filename" #默认存放在命令行工作目录下
   # shellcheck disable=SC2046
-  printf "下载成功！文件保存在%s/%s" $(pwd) "${filename}"
+  printf "下载成功！文件保存在%s/%s \n" $(pwd) "${filename}"
   exit 0
 }
 main
