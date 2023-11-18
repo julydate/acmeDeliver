@@ -6,6 +6,7 @@ import (
 	"github.com/robfig/cron/v3"
 
 	"github.com/julydate/acmeDeliver/app/mylego"
+	"github.com/julydate/acmeDeliver/config"
 )
 
 type Controller struct {
@@ -13,4 +14,5 @@ type Controller struct {
 	myLego    []*mylego.LegoCMD
 	cronJob   *cron.Cron
 	interval  int
+	tlsConfig *config.TlsConfig
 }
