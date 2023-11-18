@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -27,26 +28,38 @@ func New(c *config.Config) *Controller {
 			Addr:    fmt.Sprintf("%s:%d", c.Bind, c.Port),
 			Handler: handler.New(c),
 		},
-		myLego:   legos,
-		cronJob:  cron.New(),
-		interval: c.Interval,
+		myLego:    legos,
+		cronJob:   cron.New(),
+		interval:  c.Interval,
+		tlsConfig: &c.TlsConfig,
 	}
 }
 
 func (c *Controller) Start() error {
-	log.Infof("Start server on: \033[32m%s\033[0m", c.httpServe.Addr)
+	var certPath, keyPath string
 
 	// Apply certs on start
 	for i := range c.myLego {
+
 		l := c.myLego[i]
 		switch l.Conf.CertMode {
 		case "dns":
-			if _, _, err := l.DNSCert(); err != nil {
+			cert, key, err := l.DNSCert()
+			if err != nil {
 				log.Error(err)
 			}
+			if l.Conf.CertDomain == c.tlsConfig.Domain {
+				certPath = cert
+				keyPath = key
+			}
 		case "http", "tls":
-			if _, _, err := l.HTTPCert(); err != nil {
+			cert, key, err := l.HTTPCert()
+			if err != nil {
 				log.Error(err)
+			}
+			if l.Conf.CertDomain == c.tlsConfig.Domain {
+				certPath = cert
+				keyPath = key
 			}
 		default:
 			log.Errorf("unsupported certmode: %s", l.Conf.CertMode)
@@ -59,6 +72,17 @@ func (c *Controller) Start() error {
 		log.Error(err)
 	}
 
+	if c.tlsConfig.Enable {
+		if certPath == "" && keyPath == "" {
+			return errors.New("cert file is not exist")
+		}
+
+		c.httpServe.Addr = fmt.Sprintf("%s:%d", c.tlsConfig.Bind, c.tlsConfig.Port)
+		log.Infof("Start tls server on: \033[32m%s\033[0m (%s)", c.httpServe.Addr, c.tlsConfig.Domain)
+		return c.httpServe.ListenAndServeTLS(certPath, keyPath)
+	}
+
+	log.Infof("Start server on: \033[32m%s\033[0m", c.httpServe.Addr)
 	return c.httpServe.ListenAndServe()
 }
 

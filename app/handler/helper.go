@@ -2,14 +2,13 @@ package handler
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"net/url"
 	"os"
 	"path"
 	"strings"
 
-	"github.com/sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/net/idna"
 )
 
@@ -24,8 +23,8 @@ func checkValue(response http.ResponseWriter, form url.Values, key string) (stri
 }
 
 func handleErrorResponse(response http.ResponseWriter, ip string, statusCode int, errorMessage, printMessage string) {
-	logrus.Infof("Access from IP: %s", ip)
-	logrus.Infof(printMessage)
+	log.Infof("Access from IP: %s", ip)
+	log.Infof(printMessage)
 	response.WriteHeader(statusCode)
 	fmt.Fprintf(response, errorMessage)
 }
@@ -47,7 +46,7 @@ func validateFileAndDomain(ip string, domain string, file string, response http.
 func sanitizedDomain(domain string) string {
 	safe, err := idna.ToASCII(strings.ReplaceAll(domain, "*", "_"))
 	if err != nil {
-		log.Panic(err)
+		log.Error(err)
 	}
 	return safe
 }
