@@ -1,34 +1,14 @@
 Bind: 0.0.0.0
 Port: 9090
 TimeDiff: 60
-key: passwd
+key: 123456
 Interval: 3600
-
-TlsConfig:
-  Enable: false
-  Domain: test.example.com
-  Bind: 0.0.0.0
-  Port: 9443
 
 CertConfig:
   - CertMode: dns
-    CertDomain: test1.example.com
+    CertDomain: test.example.com
     Provider: cloudflare
     Email: test@test.com
     DNSEnv:
       CLOUDFLARE_EMAIL: YOUR_EMAIL
       CLOUDFLARE_API_KEY: YOUR_API_KEY
-#  - CertMode: http
-#    CertDomain: test2.example.com
-#    Provider: cloudflare
-#    Email: test@test.com
-#    DNSEnv:
-#      CLOUDFLARE_EMAIL: YOUR_EMAIL
-#      CLOUDFLARE_API_KEY: YOUR_API_KEY
-#  - CertMode: tls
-#    CertDomain: test3.example.com
-#    Provider: cloudflare
-#    Email: test@test.com
-#    DNSEnv:
-#      CLOUDFLARE_EMAIL: YOUR_EMAIL
-#      CLOUDFLARE_API_KEY: YOUR_API_KEY
